@@ -1,0 +1,3857 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SIMEX PAYMENT</title>
+    <style>
+        /* ==================== RESET & GLOBAL ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        :root {
+            --bg-primary: #0b0e14;
+            --bg-secondary: #131a24;
+            --bg-card: #1a2430;
+            --bg-card-hover: #233040;
+            --text-primary: #f0f4fa;
+            --text-secondary: #9aaec9;
+            --text-muted: #6a7f99;
+            --gold: #f5b342;
+            --gold-dark: #c58a2e;
+            --gold-glow: rgba(245, 179, 66, 0.15);
+            --green: #2ecc71;
+            --red: #e74c3c;
+            --blue: #3498db;
+            --border-color: #2a3a4a;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            background-image: radial-gradient(ellipse at 30% 20%, rgba(245, 179, 66, 0.06) 0%, transparent 70%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold-dark);
+            border-radius: 10px;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 1200px;
+            min-height: 90vh;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view {
+            display: none;
+            padding: 24px;
+            animation: fadeIn 0.35s ease;
+            flex: 1;
+        }
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==================== HEADER ==================== */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .app-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .app-header .brand .gold {
+            color: var(--gold);
+        }
+        .app-header .brand .icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #0b0e14;
+        }
+        .app-header .nav-links {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .app-header .nav-links button {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .app-header .nav-links button:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+        .app-header .nav-links button.active-link {
+            background: var(--gold);
+            color: #0b0e14;
+        }
+        .app-header .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+        .app-header .user-badge .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gold);
+            color: #0b0e14;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .app-header .user-badge .banned-badge {
+            color: var(--red);
+            font-weight: 600;
+            font-size: 12px;
+            background: rgba(231, 76, 60, 0.15);
+            padding: 2px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--red);
+        }
+        .app-header .user-badge .admin-badge {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 12px;
+            background: rgba(245, 179, 66, 0.15);
+            padding: 2px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--gold);
+        }
+        .app-header .user-badge .email-badge {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        .app-header .user-badge .logout-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .app-header .user-badge .logout-btn:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+        .app-header .user-badge .logout-btn.admin-only {
+            display: inline-block;
+        }
+        .app-header .user-badge .logout-btn.buyer-hidden {
+            display: none !important;
+        }
+        .app-header .lang-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .app-header .lang-toggle:hover {
+            border-color: var(--gold);
+            color: var(--text-primary);
+        }
+
+        /* ==================== PAYMENT ==================== */
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 16px;
+        }
+        @media (max-width: 700px) {
+            .payment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .method-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 2px solid transparent;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+        .method-card:hover {
+            border-color: var(--gold-dark);
+            transform: translateY(-2px);
+        }
+        .method-card.selected {
+            border-color: var(--gold);
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+        .method-card .method-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .method-card .method-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .method-card .method-detail {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 6px;
+            word-break: break-all;
+        }
+        .method-card .method-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--gold);
+            color: #0b0e14;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .dana-copy-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .dana-copy-row .dana-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold);
+            background: var(--bg-secondary);
+            padding: 4px 14px;
+            border-radius: 8px;
+            letter-spacing: 1px;
+            font-family: monospace;
+        }
+        .btn-copy {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-copy:hover {
+            border-color: var(--gold);
+            color: var(--text-primary);
+            background: var(--bg-card-hover);
+        }
+        .btn-copy.copied {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .qris-container {
+            margin-top: 12px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            border: 2px dashed var(--border-color);
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .qris-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            touch-action: none;
+            cursor: grab;
+        }
+        .qris-wrapper:active {
+            cursor: grabbing;
+        }
+        .qris-image-container {
+            transform-origin: center center;
+            transition: transform 0.05s linear;
+            will-change: transform;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        .qris-image-container img {
+            max-width: 100%;
+            max-height: 300px;
+            width: auto;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            pointer-events: none;
+            touch-action: none;
+        }
+        .qris-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        .qris-controls button {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .qris-controls button:hover {
+            border-color: var(--gold);
+            color: var(--text-primary);
+            background: var(--bg-card-hover);
+        }
+        .qris-controls button:active {
+            transform: scale(0.95);
+        }
+        .qris-controls .zoom-level {
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 0 8px;
+            display: flex;
+            align-items: center;
+        }
+        .qris-placeholder-text {
+            color: var(--text-muted);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* ==================== PAYMENT FORM ==================== */
+        .payment-form {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: var(--transition);
+            outline: none;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px var(--gold-glow);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .file-upload-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 12px 18px;
+            transition: var(--transition);
+            cursor: pointer;
+            flex-wrap: wrap;
+        }
+        .file-upload-box:hover {
+            border-color: var(--gold);
+            background: var(--bg-card-hover);
+        }
+        .file-upload-box input[type="file"] {
+            display: none;
+        }
+        .file-upload-box .file-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            flex: 1;
+            cursor: pointer;
+        }
+        .file-upload-box .file-label .file-name {
+            color: var(--gold);
+            font-weight: 500;
+            margin-left: 4px;
+            word-break: break-all;
+        }
+        .file-upload-box .file-preview {
+            margin-top: 6px;
+            display: none;
+            width: 100%;
+        }
+        .file-upload-box .file-preview img {
+            max-width: 120px;
+            max-height: 100px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: block;
+        }
+        .file-upload-box .file-preview.show {
+            display: block;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #0b0e14;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--gold-glow);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-success {
+            background: var(--green);
+            color: #0b0e14;
+        }
+        .btn-danger {
+            background: var(--red);
+            color: #fff;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .btn-outline:hover {
+            border-color: var(--gold);
+            color: var(--text-primary);
+        }
+        .btn-sm {
+            padding: 6px 16px;
+            font-size: 13px;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+            padding: 14px;
+            font-size: 16px;
+        }
+
+        /* ==================== DASHBOARD BUYER ==================== */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 16px;
+        }
+        @media (max-width: 860px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dashboard-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .dashboard-card .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dashboard-card .card-title .badge {
+            font-size: 11px;
+            background: var(--gold);
+            color: #0b0e14;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .status-badge.pending {
+            background: rgba(245, 179, 66, 0.2);
+            color: var(--gold);
+        }
+        .status-badge.confirmed {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--green);
+        }
+        .status-badge.rejected {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--red);
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        .transaction-item .tx-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .transaction-item .tx-info .tx-id {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .transaction-item .tx-info .tx-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .transaction-item .tx-amount {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ==================== CHAT ==================== */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 420px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .chat-message {
+            max-width: 80%;
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+            animation: fadeIn 0.25s ease;
+        }
+        .chat-message.buyer {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #0b0e14;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-message.admin {
+            align-self: flex-start;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .chat-message .msg-time {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 4px;
+            display: block;
+            text-align: right;
+        }
+        .chat-message .msg-sender {
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+        .chat-input .chat-input-wrapper {
+            display: flex;
+            flex: 1;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            min-width: 120px;
+        }
+        .chat-input input:focus {
+            border-color: var(--gold);
+        }
+        .chat-input button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 24px;
+            background: var(--gold);
+            color: #0b0e14;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .chat-input button:hover {
+            transform: scale(1.04);
+        }
+        .chat-input .quick-reply-select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 10px 16px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+            min-width: 140px;
+        }
+        .chat-input .quick-reply-select:focus {
+            border-color: var(--gold);
+        }
+
+        /* ==================== ADMIN ==================== */
+        .admin-login {
+            max-width: 420px;
+            margin: 40px auto;
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .admin-login .logo-big {
+            font-size: 42px;
+            margin-bottom: 8px;
+        }
+        .admin-login h2 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .admin-login p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .admin-login input {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 15px;
+            outline: none;
+            margin-bottom: 12px;
+        }
+        .admin-login input:focus {
+            border-color: var(--gold);
+        }
+        .admin-login .error-msg {
+            color: var(--red);
+            font-size: 13px;
+            margin-top: -6px;
+            margin-bottom: 14px;
+            display: none;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .admin-tabs button {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+            flex: 1;
+            min-width: 80px;
+        }
+        .admin-tabs button:hover {
+            color: var(--text-primary);
+        }
+        .admin-tabs button.active-tab {
+            background: var(--bg-card);
+            color: var(--gold);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .admin-panel.active-panel {
+            display: block;
+        }
+
+        .admin-transaction-list {
+            max-height: 520px;
+            overflow-y: auto;
+        }
+        .admin-tx-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            border-left: 4px solid var(--gold-dark);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .admin-tx-item .tx-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .admin-tx-item .tx-left .tx-id {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .admin-tx-item .tx-left .tx-detail {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .admin-tx-item .tx-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .admin-tx-item .tx-right .tx-amount {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .admin-tx-item .tx-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .admin-tx-item .tx-receipt {
+            font-size: 12px;
+            color: var(--blue);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Settings */
+        .settings-group {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .settings-group h4 {
+            font-size: 15px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+        .settings-group .setting-row {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .settings-group .setting-row input[type="text"],
+        .settings-group .setting-row input[type="file"] {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            min-width: 180px;
+        }
+        .settings-group .setting-row input:focus {
+            border-color: var(--gold);
+        }
+        .settings-group .qris-preview {
+            margin-top: 12px;
+            max-width: 200px;
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--border-color);
+            padding: 8px;
+            background: var(--bg-secondary);
+        }
+        .settings-group .qris-preview img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        
+        /* ==================== TOAST NOTIFIKASI ANIMASI ==================== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+        }
+        .toast {
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 14px;
+            box-shadow: var(--shadow);
+            animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform-origin: right center;
+        }
+        .toast.success {
+            border-left: 4px solid var(--green);
+        }
+        .toast.error {
+            border-left: 4px solid var(--red);
+        }
+        .toast.info {
+            border-left: 4px solid var(--gold);
+        }
+
+        @keyframes slideInRight {
+            0% {
+                opacity: 0;
+                transform: translateX(120%) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes slideOutRight {
+            0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(120%) scale(0.8);
+            }
+        }
+
+        .toast.removing {
+            animation: slideOutRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 600px) {
+            .view {
+                padding: 16px;
+            }
+            .app-header {
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 12px 16px;
+            }
+            .app-header .brand {
+                font-size: 17px;
+            }
+            .app-header .nav-links button {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+            .method-card {
+                padding: 18px;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .admin-tx-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .admin-tx-item .tx-right {
+                justify-content: space-between;
+            }
+            .chat-message {
+                max-width: 92%;
+            }
+            .admin-login {
+                padding: 24px 20px;
+                margin: 20px auto;
+            }
+            .toast-container {
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+                max-width: none;
+            }
+            .qris-image-container img {
+                max-height: 200px;
+            }
+            .form-grid {
+                gap: 14px;
+            }
+            .chat-input .quick-reply-select {
+                min-width: 100%;
+            }
+            .chat-input .chat-input-wrapper {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* ==================== UTILITY ==================== */
+        .text-gold {
+            color: var(--gold);
+        }
+        .text-muted {
+            color: var(--text-muted);
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .mt-20 {
+            margin-top: 20px;
+        }
+        .mb-12 {
+            margin-bottom: 12px;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .gap-12 {
+            gap: 12px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .w-full {
+            width: 100%;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-overlay .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-overlay .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius-sm);
+        }
+        .modal-overlay .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 28px;
+            cursor: pointer;
+        }
+        .modal-overlay .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-6px);
+            }
+            75% {
+                transform: translateX(6px);
+            }
+        }
+        .shake {
+            animation: shake 0.3s ease;
+        }
+        
+        /* ==================== LOGIN MODAL ==================== */
+        .login-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(6px);
+        }
+        .login-modal-overlay.hidden {
+            display: none;
+        }
+        .login-modal {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 440px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .login-modal .login-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+        .login-modal h2 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .login-modal .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .login-modal .form-group {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+        .login-modal .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .login-modal .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 15px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .login-modal .form-group input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px var(--gold-glow);
+        }
+        .login-modal .error-msg {
+            color: var(--red);
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .login-modal .info-msg {
+            color: var(--gold);
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .login-modal .btn-primary {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        /* User list di admin */
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            border-left: 3px solid var(--gold-dark);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .user-item .user-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .user-item .user-email {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .user-item .user-status {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .user-item .user-status.banned {
+            color: var(--red);
+        }
+        .user-item .user-status.active {
+            color: var(--green);
+        }
+        .user-item .user-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .btn-ban {
+            background: var(--red);
+            color: #fff;
+            border: none;
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-ban:hover {
+            opacity: 0.8;
+        }
+        .btn-unban {
+            background: var(--green);
+            color: #0b0e14;
+            border: none;
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-unban:hover {
+            opacity: 0.8;
+        }
+        .btn-delete {
+            background: #c0392b;
+            color: #fff;
+            border: none;
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-delete:hover {
+            opacity: 0.8;
+        }
+
+        /* Notifikasi */
+        .notification-item {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--gold);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .notification-item .notif-content {
+            flex: 1;
+        }
+        .notification-item .notif-content .notif-message {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .notification-item .notif-content .notif-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .notification-item .notif-content .notif-image {
+            margin-top: 8px;
+            max-width: 200px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .notification-item .notif-badge {
+            background: var(--gold);
+            color: #0b0e14;
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .notification-item.unread {
+            border-left-color: var(--gold);
+            background: var(--bg-card-hover);
+        }
+        .notification-item.read {
+            border-left-color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        /* admin notification form */
+        .notif-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .notif-form select,
+        .notif-form textarea,
+        .notif-form input {
+            padding: 10px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+        }
+        .notif-form select:focus,
+        .notif-form textarea:focus,
+        .notif-form input:focus {
+            border-color: var(--gold);
+        }
+        .notif-form .file-upload-box {
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .notif-form .file-upload-box:hover {
+            border-color: var(--gold);
+        }
+        .notif-form .file-upload-box input[type="file"] {
+            display: none;
+        }
+        .notif-form .file-upload-box .file-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .notif-form .file-upload-box .file-label .file-name {
+            color: var(--gold);
+        }
+
+        /* ==================== ACTIVITY LOG ==================== */
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            border-left: 3px solid var(--gold-dark);
+            align-items: flex-start;
+        }
+        .activity-item .activity-icon {
+            font-size: 20px;
+            width: 32px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .activity-item .activity-content {
+            flex: 1;
+        }
+        .activity-item .activity-content .activity-text {
+            font-size: 14px;
+        }
+        .activity-item .activity-content .activity-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ==================== AUTO-REPLY ==================== */
+        .auto-reply-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            border-left: 3px solid var(--gold);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .auto-reply-item .reply-keyword {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--gold);
+        }
+        .auto-reply-item .reply-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex: 1;
+        }
+        .auto-reply-item .reply-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-remove-reply {
+            background: var(--red);
+            color: #fff;
+            border: none;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-remove-reply:hover {
+            opacity: 0.8;
+        }
+
+        .reply-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .reply-form input {
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            flex: 1;
+            min-width: 120px;
+        }
+        .reply-form input:focus {
+            border-color: var(--gold);
+        }
+        .reply-form button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--gold);
+            color: #0b0e14;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .reply-form button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+  
+    <!-- ========== TOAST CONTAINER ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ========== MODAL RECEIPT PREVIEW ========== -->
+    <div class="modal-overlay" id="receiptModal">
+        <div class="modal-content">
+            <button class="modal-close" id="receiptModalClose">&times;</button>
+            <img id="receiptModalImg" src="" alt="Bukti Transfer" />
+        </div>
+    </div>
+
+    <!-- ========== LOGIN MODAL (PERTAMA KALI BUKA) ========== -->
+    <div class="login-modal-overlay" id="loginModal">
+        <div class="login-modal">
+            <div class="login-icon">👤</div>
+            <h2 id="loginTitle">Masukkan Nama Anda</h2>
+            <p class="subtitle" id="loginSub">Nama ini akan menjadi identitas transaksi Anda.<br />Hanya Anda yang bisa melihat riwayat Anda sendiri.</p>
+
+            <div class="form-group">
+                <label id="loginNamaLabel">Nama Unik</label>
+                <input type="text" id="loginNama" placeholder="Misal: Simex" />
+            </div>
+            <div class="form-group">
+                <label id="loginEmailLabel">Email (untuk notifikasi)</label>
+                <input type="email" id="loginEmail" placeholder="email@example.com" />
+            </div>
+            <div class="form-group">
+                <label id="loginAdminLabel">Kode Admin <span style="color:var(--text-muted);font-weight:400;">(opsional, isi kode untuk admin)</span></label>
+                <input type="password" id="loginAdminCode" placeholder="Kode admin" />
+            </div>
+
+            <div class="error-msg" id="loginModalError">❌ Nama dan email harus diisi.</div>
+            <div class="info-msg" id="loginModalInfo">✅ Kode admin benar! Anda akan masuk sebagai admin.</div>
+
+            <button class="btn btn-primary" id="btnLoginSubmit">🚀 Masuk</button>
+        </div>
+    </div>
+
+    <!-- ========== APP ========== -->
+    <div id="app">
+
+        <!-- ===== HEADER ===== -->
+        <header class="app-header" id="appHeader">
+            <div class="brand">
+                <div class="icon">⚡</div>
+                <span>SIMEX <span class="gold">PAYMENT</span></span>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <button class="active-link" data-view="payment">💳 Bayar</button>
+                <button data-view="buyer-dashboard">📊 Dashboard Saya</button>
+                <button data-view="admin-login">🔐 Admin</button>
+            </div>
+            <div class="user-badge" id="userBadge">
+                <span id="userNameDisplay">-</span>
+                <span class="email-badge" id="userEmailDisplay"></span>
+                <div class="avatar" id="userAvatar">?</div>
+                <span class="banned-badge" id="bannedBadge" style="display:none;">⛔ Banned</span>
+                <span class="admin-badge" id="adminBadge" style="display:none;">👑 Admin</span>
+                <button class="logout-btn" id="logoutBtn" style="display:none;">Keluar</button>
+                <button class="lang-toggle" id="langToggle">🌐 ID</button>
+            </div>
+        </header>
+
+        <!-- ============================================================ -->
+        <!-- VIEW: PAYMENT                                                -->
+        <!-- ============================================================ -->
+        <div class="view active" id="view-payment">
+            <h2 style="font-size:22px; margin-bottom:4px;" id="paymentTitle">💳 <span class="text-gold">Pilih Metode Pembayaran</span></h2>
+            <p style="color:var(--text-secondary); font-size:14px;" id="paymentSub">Transfer sesuai nominal & kirim bukti untuk konfirmasi</p>
+
+            <div class="payment-grid">
+                <!-- DANA -->
+                <div class="method-card selected" data-method="dana" id="cardDana">
+                    <div class="method-icon">🏦</div>
+                    <div class="method-name">DANA</div>
+                    <div class="method-detail">
+                        <span style="color:var(--text-secondary);" id="danaLabel">Nomor DANA:</span>
+                        <div class="dana-copy-row">
+                            <span class="dana-number" id="danaNumberDisplay">089519371436</span>
+                            <button class="btn-copy" id="copyDanaBtn" title="Salin nomor DANA">
+                                📋 Salin
+                            </button>
+                        </div>
+                    </div>
+                    <div class="method-badge">POPULER</div>
+                    <div style="margin-top:12px; font-size:13px; color:var(--text-secondary);" id="danaDesc">
+                        ⚡ Transfer ke nomor DANA di atas, lalu upload bukti.
+                    </div>
+                </div>
+
+                <!-- QRIS -->
+                <div class="method-card" data-method="qris" id="cardQris">
+                    <div class="method-icon">📱</div>
+                    <div class="method-name">QRIS</div>
+                    <div class="method-detail" id="qrisLabel">Scan QRIS di bawah</div>
+                    <div class="method-badge">INSTAN</div>
+                    <div class="qris-container" id="qrisContainer">
+                        <div class="qris-wrapper" id="qrisWrapper">
+                            <div class="qris-image-container" id="qrisImageContainer" style="transform: scale(1) translate(0px, 0px);">
+                                <div id="qrisDisplay">
+                                    <span style="font-size:40px;">⬛</span>
+                                    <div class="qris-placeholder-text" id="qrisPlaceholder">QRIS belum diatur oleh Admin</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="qris-controls">
+                            <button id="qrisZoomIn" title="Perbesar">➕</button>
+                            <button id="qrisZoomOut" title="Perkecil">➖</button>
+                            <button id="qrisReset" title="Reset ukuran & posisi">⟲ Reset</button>
+                            <span class="zoom-level" id="qrisZoomLevel">100%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== FORM PEMBAYARAN ===== -->
+            <div class="payment-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="payAmount" id="payAmountLabel">Nominal Transfer (Rp)</label>
+                        <input type="number" id="payAmount" placeholder="100000" min="1000" />
+                    </div>
+                    <div class="form-group">
+                        <label for="payBuyerName" id="payNameLabel">Nama Pembeli (otomatis)</label>
+                        <input type="text" id="payBuyerName" placeholder="Nama akan diisi otomatis" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="payPhone" id="payPhoneLabel">No. HP / WA</label>
+                        <input type="text" id="payPhone" placeholder="08123456789" />
+                    </div>
+                    <div class="form-group">
+                        <label for="payNote" id="payNoteLabel">Keterangan (opsional)</label>
+                        <input type="text" id="payNote" placeholder="Catatan tambahan" />
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:18px;">
+                    <label id="payUploadLabel">Upload Bukti Transfer</label>
+                    <div class="file-upload-box" id="fileUploadBox">
+                        <input type="file" id="payReceipt" accept="image/*" />
+                        <div class="file-label">
+                            <span>📎</span>
+                            <span id="payUploadText">Klik untuk pilih gambar bukti</span>
+                            <span class="file-name" id="receiptFileName">(belum ada)</span>
+                        </div>
+                        <div class="file-preview" id="receiptPreview">
+                            <img id="receiptPreviewImg" src="" alt="Preview" />
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block mt-16" id="btnSubmitPayment">
+                    💰 Kirim Pembayaran
+                </button>
+            </div>
+
+            <div style="margin-top:16px; font-size:13px; color:var(--text-muted); text-align:center;" id="paymentFooter">
+                ⚡ Setelah transfer, tunggu konfirmasi dari admin di Dashboard Saya.
+            </div>
+        </div>
+
+        <!--
+        ============================================================ -->
+        <!-- VIEW: BUYER DASHBOARD                                       -->
+        <!-- ============================================================ -->
+        <div class="view" id="view-buyer-dashboard">
+            <h2 style="font-size:22px; margin-bottom:4px;" id="dashboardTitle">📊 <span class="text-gold">Dashboard Saya</span></h2>
+            <p style="color:var(--text-secondary); font-size:14px;" id="dashboardSub">Status transaksi & chat dengan admin</p>
+
+            <div class="dashboard-grid">
+                <!-- Status Transaksi -->
+                <div class="dashboard-card">
+                    <div class="card-title">
+                        <span id="statusTitle">📋 Status Transaksi</span>
+                        <span class="badge" id="txStatusBadge">Belum ada</span>
+                    </div>
+                    <div id="buyerTransactionInfo">
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <p id="statusEmpty">Belum ada transaksi aktif.<br />Silakan lakukan pembayaran dulu.</p>
+                        </div>
+                    </div>
+                    <div id="buyerTransactionDetail" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div>
+                                <div style="font-size:13px; color:var(--text-muted);" id="txIdLabel">ID Transaksi</div>
+                                <div style="font-weight:700; font-size:16px;" id="buyerTxId">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size:13px; color:var(--text-muted);" id="txAmountLabel">Nominal</div>
+                                <div style="font-weight:700; font-size:18px; color:var(--gold);" id="buyerTxAmount">Rp 0</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:10px;">
+                            <div>
+                                <div style="font-size:13px; color:var(--text-muted);" id="txMethodLabel">Metode</div>
+                                <div id="buyerTxMethod">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size:13px; color:var(--text-muted);" id="txStatusLabel">Status</div>
+                                <span id="buyerTxStatus" class="status-badge pending">⏳ Pending</span>
+                            </div>
+                            <div>
+                                <div style="font-size:13px; color:var(--text-muted);" id="txDateLabel">Tanggal</div>
+                                <div id="buyerTxDate" style="font-size:13px;">-</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:10px; padding:10px; background:var(--bg-secondary); border-radius:8px; font-size:13px; color:var(--text-secondary);">
+                            <strong id="receiptLabel">Bukti Transfer:</strong>
+                            <span id="buyerTxReceiptLink" style="color:var(--blue); cursor:pointer; text-decoration:underline;">Lihat Bukti</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat dengan Admin -->
+                <div class="dashboard-card">
+                    <div class="card-title">
+                        <span id="chatTitle">💬 Chat Admin</span>
+                        <span class="badge" id="chatUnreadBadge" style="display:none;">● Baru</span>
+                    </div>
+                    <div class="chat-container" style="height:360px;">
+                        <div class="chat-messages" id="buyerChatMessages">
+                            <div class="empty-state" style="padding:30px 10px;">
+                                <div class="empty-icon">💬</div>
+                                <p id="chatEmpty">Belum ada pesan. Mulai chat dengan admin!</p>
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <div class="chat-input-wrapper">
+                                <input type="text" id="buyerChatInput" placeholder="Tulis pesan..." />
+                                <button id="buyerChatSend">Kirim</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Riwayat Transaksi -->
+            <div class="dashboard-card mt-16">
+                <div class="card-title"><span id="historyTitle">📜 Riwayat Transaksi</span></div>
+                <div id="buyerHistory">
+                    <div class="empty-state">
+                        <p style="font-size:13px;" id="historyEmpty">Belum ada riwayat.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifikasi -->
+            <div class="dashboard-card mt-16">
+                <div class="card-title">
+                    <span id="notifTitle">🔔 Notifikasi</span>
+                    <span class="badge" id="notifBadge">0</span>
+                </div>
+                <div id="buyerNotifications">
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <p id="notifEmpty">Belum ada notifikasi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- VIEW: ADMIN LOGIN                                           -->
+        <!-- ============================================================ -->
+        <div class="view" id="view-admin-login">
+            <div class="admin-login">
+                <div class="logo-big">🔐</div>
+                <h2>Admin <span class="text-gold">SIMEX</span></h2>
+                <p>Masukkan username dan OTP untuk masuk</p>
+                <input type="text" id="adminUsername" placeholder="Username" value="admin" />
+                <input type="password" id="adminOtp" placeholder="OTP ADMIN" />
+                <div class="error-msg" id="loginError">❌ Username atau OTP salah!</div>
+                <button class="btn btn-primary btn-block" id="btnAdminLogin">Masuk Dashboard</button>
+                <div style="margin-top:14px; font-size:12px; color:var(--text-muted);">
+                    Default: <strong style="color:var(--gold);">ADMIN PANEL</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- VIEW: ADMIN DASHBOARD                                      -->
+        <!-- ============================================================ -->
+        <div class="view" id="view-admin-dashboard">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:4px;">
+                <h2 style="font-size:22px;">⚙️ <span class="text-gold">Dashboard Admin</span></h2>
+                <button class="btn btn-outline btn-sm" id="btnAdminLogout">🚪 Keluar</button>
+            </div>
+            <p style="color:var(--text-secondary); font-size:14px;">Kelola transaksi, chat, user, notifikasi, dan pengaturan</p>
+
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="active-tab" data-panel="transactions">📋 Transaksi</button>
+                <button data-panel="chats">💬 Chat</button>
+                <button data-panel="users">👥 Users</button>
+                <button data-panel="notifications">🔔 Notifikasi</button>
+                <button data-panel="autoreply">🤖 Auto-Reply</button>
+                <button data-panel="activity">📋 Activity</button>
+                <button data-panel="settings">⚙️ Pengaturan</button>
+            </div>
+
+            <!-- Panel: Transaksi -->
+            <div class="admin-panel active-panel" id="panel-transactions">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+                    <span style="font-size:14px; color:var(--text-secondary);">Semua transaksi masuk</span>
+                    <span id="txCount" style="font-size:13px; background:var(--bg-card); padding:4px 14px; border-radius:20px;">0</span>
+                </div>
+                <div class="admin-transaction-list" id="adminTransactionList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <p>Belum ada transaksi.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Chat -->
+            <div class="admin-panel" id="panel-chats">
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+                    <div style="flex:1; min-width:160px;">
+                        <label style="font-size:13px; color:var(--text-secondary);">Pilih transaksi:</label>
+                        <select id="adminChatSelect" style="width:100%; padding:10px 14px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-size:14px; outline:none;">
+                            <option value="">-- Pilih transaksi --</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:flex-end;">
+                        <button class="btn btn-primary btn-sm" id="btnAdminChatRefresh">🔄 Refresh</button>
+                    </div>
+                </div>
+                <div class="chat-container" style="height:400px;">
+                    <div class="chat-messages" id="adminChatMessages">
+                        <div class="empty-state" style="padding:30px 10px;">
+                            <div class="empty-icon">💬</div>
+                            <p>Pilih transaksi di atas untuk mulai chat.</p>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <div class="chat-input-wrapper" style="flex-wrap:wrap; gap:8px;">
+                            <select class="quick-reply-select" id="quickReplySelect">
+                                <option value="">📝 Quick Reply</option>
+                                <option value="Pembayaran telah dikonfirmasi. Terima kasih!">✅ Konfirmasi</option>
+                                <option value="Mohon upload ulang bukti transfer yang jelas.">📸 Upload ulang bukti</option>
+                                <option value="Nomor transfer tidak sesuai, silakan cek kembali.">❌ Nomor salah</option>
+                                <option value="Pembayaran sudah kami terima, sedang diproses.">⏳ Sedang diproses</option>
+                            </select>
+                            <input type="text" id="adminChatInput" placeholder="Tulis pesan sebagai admin..." style="flex:1; min-width:150px;" />
+                            <button id="adminChatSend">Kirim</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Users -->
+            <div class="admin-panel" id="panel-users">
+                <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <span style="font-size:14px; color:var(--text-secondary);">Daftar pengguna</span>
+                    <span id="userCount" style="font-size:13px; background:var(--bg-card); padding:4px 14px; border-radius:20px;">0</span>
+                </div>
+                <div id="adminUserList">
+                    <div class="empty-state">
+                        <div class="empty-icon">👤</div>
+                        <p>Belum ada pengguna terdaftar.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Notifikasi -->
+            <div class="admin-panel" id="panel-notifications">
+                <div style="margin-bottom:16px;">
+                    <h3 style="color:var(--text-secondary); margin-bottom:8px;">Kirim Notifikasi ke User</h3>
+                    <div class="notif-form">
+                        <select id="notifUserSelect">
+                            <option value="">-- Pilih user --</option>
+                        </select>
+                        <textarea id="notifMessage" placeholder="Pesan notifikasi..." rows="3"></textarea>
+                        <div class="file-upload-box" id="notifFileBox">
+                            <input type="file" id="notifImage" accept="image/*" />
+                            <div class="file-label">
+                                <span>📎</span>
+                                <span>Tambahkan gambar (opsional)</span>
+                                <span class="file-name" id="notifFileName">(belum ada)</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="btnSendNotif">📨 Kirim Notifikasi</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color:var(--text-secondary); margin-bottom:8px;">Riwayat Notifikasi</h3>
+                    <div id="adminNotificationList">
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <p>Belum ada notifikasi terkirim.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel: Auto-Reply -->
+            <div class="admin-panel" id="panel-autoreply">
+                <h3 style="color:var(--text-secondary); margin-bottom:12px;">🤖 Auto-Reply Chat</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Buat template respons otomatis berdasarkan kata kunci. Saat user mengirim pesan yang mengandung kata kunci, sistem akan membalas otomatis.</p>
+                <div class="reply-form">
+                    <input type="text" id="replyKeyword" placeholder="Kata kunci (misal: status)" />
+                    <input type="text" id="replyMessage" placeholder="Balasan otomatis..." />
+                    <button id="btnAddReply">➕ Tambah</button>
+                </div>
+                <div id="autoReplyList">
+                    <div class="empty-state">
+                        <div class="empty-icon">🤖</div>
+                        <p>Belum ada auto-reply.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Activity Log -->
+            <div class="admin-panel" id="panel-activity">
+                <h3 style="color:var(--text-secondary); margin-bottom:12px;">📋 Aktivitas User</h3>
+                <div id="adminActivityList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p>Belum ada aktivitas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Settings -->
+            <div class="admin-panel" id="panel-settings">
+                <div class="settings-group">
+                    <h4>🏦 Nomor DANA</h4>
+                    <div class="setting-row">
+                        <input type="text" id="settingDana" value="089519371436" />
+                        <button class="btn btn-primary btn-sm" id="btnSaveDana">Simpan</button>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h4>📱 QRIS</h4>
+                    <div class="setting-row">
+                        <input type="file" id="settingQris" accept="image/*" />
+                        <button class="btn btn-primary btn-sm" id="btnSaveQris">Upload QRIS</button>
+                    </div>
+                    <div class="qris-preview" id="qrisPreviewContainer" style="display:none;">
+                        <img id="qrisPreviewImg" src="" alt="QRIS" />
+                    </div>
+                    <div style="margin-top:8px; font-size:13px; color:var(--text-muted);">
+                        Upload gambar QRIS untuk ditampilkan di halaman pembayaran.
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h4>🔑 OTP Admin</h4>
+                    <div class="setting-row">
+                        <input type="text" id="settingAdminOtp" value="KODE" />
+                        <button class="btn btn-primary btn-sm" id="btnSaveOtp">Ganti OTP</button>
+                    </div>
+                    <div style="margin-top:8px; font-size:13px; color:var(--text-muted);">
+                        OTP untuk login admin. Username tetap <strong>admin</strong>.
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h4>🗑️ Data</h4>
+                    <button class="btn btn-danger btn-sm" id="btnResetAll">Reset Semua Data</button>
+                    <span style="font-size:12px; color:var(--text-muted); margin-left:12px;">(hapus semua transaksi & chat)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- FOOTER                                                       -->
+        <!-- ============================================================ -->
+        <div style="padding:12px 24px; border-top:1px solid var(--border-color); font-size:12px; color:var(--text-muted); text-align:center; flex-shrink:0;">
+            &copy; 2026 SIMEX PAYMENT &bull; All in One Payment System
+        </div>
+
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- JAVASCRIPT                                                         -->
+    <!-- ================================================================== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ==================== DATA LAYER ====================
+            const STORAGE_KEY = 'simex_payment_data';
+            const USER_KEY = 'simex_user';
+            const USER_EMAIL_KEY = 'simex_user_email';
+            const LANG_KEY = 'simex_lang';
+
+            function getDefaultData() {
+                return {
+                    settings: {
+                        danaNumber: '089519371436',
+                        qrisImage: null,
+                        adminOtp: '2010',
+                        bannedUsers: [],
+                        autoReplies: [] // { keyword, message }
+                    },
+                    transactions: [],
+                    users: [],
+                    notifications: [],
+                    activityLog: [] // { user, action, details, timestamp }
+                };
+            }
+
+            let data = loadData();
+            let currentUser = loadUser();
+            let currentUserEmail = loadUserEmail();
+            let currentLang = loadLang();
+
+            function loadData() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        parsed.transactions = parsed.transactions || [];
+                        parsed.transactions.forEach(tx => {
+                            tx.chat = tx.chat || [];
+                        });
+                        parsed.settings = parsed.settings || getDefaultData().settings;
+                        parsed.settings.bannedUsers = parsed.settings.bannedUsers || [];
+                        parsed.settings.autoReplies = parsed.settings.autoReplies || [];
+                        parsed.users = parsed.users || [];
+                        parsed.notifications = parsed.notifications || [];
+                        parsed.activityLog = parsed.activityLog || [];
+                        return parsed;
+                    }
+                } catch (e) { /* ignore */ }
+                return getDefaultData();
+            }
+
+            function saveData() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+
+            function loadUser() {
+                return localStorage.getItem(USER_KEY) || null;
+            }
+
+            function loadUserEmail() {
+                return localStorage.getItem(USER_EMAIL_KEY) || null;
+            }
+
+            function loadLang() {
+                return localStorage.getItem(LANG_KEY) || 'id';
+            }
+
+            function saveLang(lang) {
+                localStorage.setItem(LANG_KEY, lang);
+                currentLang = lang;
+            }
+
+            function saveUser(name, email) {
+                if (name && name.trim()) {
+                    localStorage.setItem(USER_KEY, name.trim());
+                    currentUser = name.trim();
+                    if (email && email.trim()) {
+                        localStorage.setItem(USER_EMAIL_KEY, email.trim());
+                        currentUserEmail = email.trim();
+                        if (!data.users.find(u => u.username === currentUser)) {
+                            data.users.push({ username: currentUser, email: currentUserEmail });
+                            saveData();
+                        } else {
+                            const u = data.users.find(u => u.username === currentUser);
+                            if (u) u.email = currentUserEmail;
+                            saveData();
+                        }
+                    }
+                } else {
+                    localStorage.removeItem(USER_KEY);
+                    localStorage.removeItem(USER_EMAIL_KEY);
+                    currentUser = null;
+                    currentUserEmail = null;
+                }
+            }
+
+            function isUserBanned(username) {
+                return data.settings.bannedUsers && data.settings.bannedUsers.includes(username);
+            }
+
+            function isAdminUser() {
+                return currentUser && currentUser.toLowerCase() === 'admin';
+            }
+
+            function getActiveTransaction(user) {
+                const userTxs = data.transactions.filter(t => t.userName === user);
+                const pending = userTxs.filter(t => t.status === 'pending');
+                if (pending.length > 0) return pending[pending.length - 1];
+                const confirmed = userTxs.filter(t => t.status === 'confirmed');
+                if (confirmed.length > 0) return confirmed[confirmed.length - 1];
+                if (userTxs.length > 0) return userTxs[userTxs.length - 1];
+                return null;
+            }
+
+            function getBuyerTransactions(user) {
+                return data.transactions.filter(t => t.userName === user).slice().reverse();
+            }
+
+            function getAllUsers() {
+                const users = new Set();
+                data.transactions.forEach(t => {
+                    if (t.userName) users.add(t.userName);
+                });
+                data.users.forEach(u => users.add(u.username));
+                users.add('admin');
+                return Array.from(users);
+            }
+
+            function generateId() {
+                return 'TRX-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
+            }
+
+            function formatRupiah(num) {
+                return 'Rp ' + Number(num).toLocaleString('id-ID');
+            }
+
+            function formatDate(ts) {
+                const d = new Date(ts);
+                return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit',
+                    minute: '2-digit' });
+            }
+
+            function getStatusBadge(status) {
+                const map = {
+                    pending: '⏳ Pending',
+                    confirmed: '✅ Confirmed',
+                    rejected: '❌ Rejected'
+                };
+                return map[status] || status;
+            }
+
+            function getStatusClass(status) {
+                return status || 'pending';
+            }
+            
+            // ==================== MULTI BAHASA ====================
+            const translations = {
+                id: {
+                    // Login
+                    loginTitle: 'Masukkan Nama Anda',
+                    loginSub: 'Nama ini akan menjadi identitas transaksi Anda.\nHanya Anda yang bisa melihat riwayat Anda sendiri.',
+                    loginNamaLabel: 'Nama Unik',
+                    loginEmailLabel: 'Email (untuk notifikasi)',
+                    loginAdminLabel: 'Kode Admin (opsional, isi kode untuk admin)',
+                    loginBtn: '🚀 Masuk',
+                    // Payment
+                    paymentTitle: '💳 Pilih Metode Pembayaran',
+                    paymentSub: 'Transfer sesuai nominal & kirim bukti untuk konfirmasi',
+                    danaLabel: 'Nomor DANA:',
+                    danaDesc: '⚡ Transfer ke nomor DANA di atas, lalu upload bukti.',
+                    qrisLabel: 'Scan QRIS di bawah',
+                    qrisPlaceholder: 'QRIS belum diatur oleh Admin',
+                    payAmountLabel: 'Nominal Transfer (Rp)',
+                    payNameLabel: 'Nama Pembeli (otomatis)',
+                    payPhoneLabel: 'No. HP / WA',
+                    payNoteLabel: 'Keterangan (opsional)',
+                    payUploadLabel: 'Upload Bukti Transfer',
+                    payUploadText: 'Klik untuk pilih gambar bukti',
+                    paymentFooter: '⚡ Setelah transfer, tunggu konfirmasi dari admin di Dashboard Saya.',
+                    // Dashboard
+                    dashboardTitle: '📊 Dashboard Saya',
+                    dashboardSub: 'Status transaksi & chat dengan admin',
+                    statusTitle: '📋 Status Transaksi',
+                    statusEmpty: 'Belum ada transaksi aktif.\nSilakan lakukan pembayaran dulu.',
+                    txIdLabel: 'ID Transaksi',
+                    txAmountLabel: 'Nominal',
+                    txMethodLabel: 'Metode',
+                    txStatusLabel: 'Status',
+                    txDateLabel: 'Tanggal',
+                    receiptLabel: 'Bukti Transfer:',
+                    chatTitle: '💬 Chat Admin',
+                    chatEmpty: 'Belum ada pesan. Mulai chat dengan admin!',
+                    historyTitle: '📜 Riwayat Transaksi',
+                    historyEmpty: 'Belum ada riwayat.',
+                    notifTitle: '🔔 Notifikasi',
+                    notifEmpty: 'Belum ada notifikasi.',
+                    // Admin
+                    adminLoginTitle: 'Admin SIMEX',
+                    adminLoginSub: 'Masukkan username dan OTP untuk masuk',
+                    adminLoginBtn: 'Masuk Dashboard',
+                    // Buttons
+                    btnSubmit: '💰 Kirim Pembayaran',
+                    btnSend: 'Kirim',
+                    btnAdd: '➕ Tambah',
+                    btnRefresh: '🔄 Refresh',
+                    btnLogout: '🚪 Keluar',
+                    btnSave: 'Simpan',
+                    btnReset: 'Reset Semua Data',
+                },
+                en: {
+                    loginTitle: 'Enter Your Name',
+                    loginSub: 'This name will be your transaction identity.\nOnly you can see your own history.',
+                    loginNamaLabel: 'Unique Name',
+                    loginEmailLabel: 'Email (for notifications)',
+                    loginAdminLabel: 'Admin Code (optional, fill 2010 for admin)',
+                    loginBtn: '🚀 Login',
+                    paymentTitle: '💳 Select Payment Method',
+                    paymentSub: 'Transfer according to nominal & upload proof for confirmation',
+                    danaLabel: 'DANA Number:',
+                    danaDesc: '⚡ Transfer to the DANA number above, then upload proof.',
+                    qrisLabel: 'Scan QRIS below',
+                    qrisPlaceholder: 'QRIS not set by Admin',
+                    payAmountLabel: 'Transfer Amount (Rp)',
+                    payNameLabel: 'Buyer Name (auto)',
+                    payPhoneLabel: 'Phone / WA',
+                    payNoteLabel: 'Note (optional)',
+                    payUploadLabel: 'Upload Transfer Proof',
+                    payUploadText: 'Click to select proof image',
+                    paymentFooter: '⚡ After transfer, wait for admin confirmation in My Dashboard.',
+                    dashboardTitle: '📊 My Dashboard',
+                    dashboardSub: 'Transaction status & chat with admin',
+                    statusTitle: '📋 Transaction Status',
+                    statusEmpty: 'No active transactions.\nPlease make a payment first.',
+                    txIdLabel: 'Transaction ID',
+                    txAmountLabel: 'Amount',
+                    txMethodLabel: 'Method',
+                    txStatusLabel: 'Status',
+                    txDateLabel: 'Date',
+                    receiptLabel: 'Transfer Proof:',
+                    chatTitle: '💬 Chat Admin',
+                    chatEmpty: 'No messages yet. Start chatting with admin!',
+                    historyTitle: '📜 Transaction History',
+                    historyEmpty: 'No history yet.',
+                    notifTitle: '🔔 Notifications',
+                    notifEmpty: 'No notifications yet.',
+                    adminLoginTitle: 'Admin SIMEX',
+                    adminLoginSub: 'Enter username and OTP to login',
+                    adminLoginBtn: 'Enter Dashboard',
+                    btnSubmit: '💰 Send Payment',
+                    btnSend: 'Send',
+                    btnAdd: '➕ Add',
+                    btnRefresh: '🔄 Refresh',
+                    btnLogout: '🚪 Logout',
+                    btnSave: 'Save',
+                    btnReset: 'Reset All Data',
+                }
+            };
+
+            function t(key) {
+                return translations[currentLang]?.[key] || translations['id'][key] || key;
+            }
+
+            function applyTranslations() {
+                // Login modal
+                document.getElementById('loginTitle').textContent = t('loginTitle');
+                document.getElementById('loginSub').textContent = t('loginSub');
+                document.getElementById('loginNamaLabel').textContent = t('loginNamaLabel');
+                document.getElementById('loginEmailLabel').textContent = t('loginEmailLabel');
+                document.getElementById('loginAdminLabel').innerHTML = t('loginAdminLabel');
+                document.getElementById('btnLoginSubmit').innerHTML = t('loginBtn');
+
+                // Payment
+                document.getElementById('paymentTitle').innerHTML = t('paymentTitle');
+                document.getElementById('paymentSub').textContent = t('paymentSub');
+                document.getElementById('danaLabel').textContent = t('danaLabel');
+                document.getElementById('danaDesc').textContent = t('danaDesc');
+                document.getElementById('qrisLabel').textContent = t('qrisLabel');
+                document.getElementById('qrisPlaceholder').textContent = t('qrisPlaceholder');
+                document.getElementById('payAmountLabel').textContent = t('payAmountLabel');
+                document.getElementById('payNameLabel').textContent = t('payNameLabel');
+                document.getElementById('payPhoneLabel').textContent = t('payPhoneLabel');
+                document.getElementById('payNoteLabel').textContent = t('payNoteLabel');
+                document.getElementById('payUploadLabel').textContent = t('payUploadLabel');
+                document.getElementById('payUploadText').textContent = t('payUploadText');
+                document.getElementById('paymentFooter').textContent = t('paymentFooter');
+
+                // Dashboard
+                document.getElementById('dashboardTitle').innerHTML = t('dashboardTitle');
+                document.getElementById('dashboardSub').textContent = t('dashboardSub');
+                document.getElementById('statusTitle').textContent = t('statusTitle');
+                document.getElementById('statusEmpty').innerHTML = t('statusEmpty').replace(/\n/g, '<br />');
+                document.getElementById('txIdLabel').textContent = t('txIdLabel');
+                document.getElementById('txAmountLabel').textContent = t('txAmountLabel');
+                document.getElementById('txMethodLabel').textContent = t('txMethodLabel');
+                document.getElementById('txStatusLabel').textContent = t('txStatusLabel');
+                document.getElementById('txDateLabel').textContent = t('txDateLabel');
+                document.getElementById('receiptLabel').textContent = t('receiptLabel');
+                document.getElementById('chatTitle').textContent = t('chatTitle');
+                document.getElementById('chatEmpty').textContent = t('chatEmpty');
+                document.getElementById('historyTitle').textContent = t('historyTitle');
+                document.getElementById('historyEmpty').textContent = t('historyEmpty');
+                document.getElementById('notifTitle').textContent = t('notifTitle');
+                document.getElementById('notifEmpty').textContent = t('notifEmpty');
+
+                // Admin login
+                document.querySelector('.admin-login h2').innerHTML = t('adminLoginTitle');
+                document.querySelector('.admin-login p').textContent = t('adminLoginSub');
+                document.querySelector('#btnAdminLogin').textContent = t('adminLoginBtn');
+
+                // Buttons
+                document.getElementById('btnSubmitPayment').innerHTML = t('btnSubmit');
+                document.getElementById('buyerChatSend').textContent = t('btnSend');
+                document.getElementById('adminChatSend').textContent = t('btnSend');
+                document.getElementById('btnAdminChatRefresh').textContent = t('btnRefresh');
+                document.getElementById('btnAdminLogout').textContent = t('btnLogout');
+                document.getElementById('btnSaveDana').textContent = t('btnSave');
+                document.getElementById('btnSaveQris').textContent = t('btnSave');
+                document.getElementById('btnSaveOtp').textContent = t('btnSave');
+                document.getElementById('btnResetAll').textContent = t('btnReset');
+                document.getElementById('btnAddReply').textContent = t('btnAdd');
+            }
+
+            // ==================== TOAST ANIMASI ====================
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+                toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('removing');
+                    setTimeout(() => toast.remove(), 400);
+                }, 3500);
+            }
+            
+            // ==================== MODAL RECEIPT ====================
+            const modal = document.getElementById('receiptModal');
+            const modalImg = document.getElementById('receiptModalImg');
+            const modalClose = document.getElementById('receiptModalClose');
+
+            function openReceiptModal(src) {
+                modalImg.src = src;
+                modal.classList.add('open');
+            }
+
+            modalClose.addEventListener('click', () => modal.classList.remove('open'));
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('open');
+            });
+
+            // ==================== LOGIN MODAL ====================
+            const loginModal = document.getElementById('loginModal');
+            const loginNama = document.getElementById('loginNama');
+            const loginEmail = document.getElementById('loginEmail');
+            const loginAdminCode = document.getElementById('loginAdminCode');
+            const loginModalError = document.getElementById('loginModalError');
+            const loginModalInfo = document.getElementById('loginModalInfo');
+            const btnLoginSubmit = document.getElementById('btnLoginSubmit');
+
+            function showLoginModal() {
+                loginModal.classList.remove('hidden');
+                loginNama.value = '';
+                loginEmail.value = '';
+                loginAdminCode.value = '';
+                loginModalError.style.display = 'none';
+                loginModalInfo.style.display = 'none';
+                setTimeout(() => loginNama.focus(), 200);
+            }
+
+            function hideLoginModal() {
+                loginModal.classList.add('hidden');
+            }
+
+            btnLoginSubmit.addEventListener('click', handleLoginSubmit);
+            loginNama.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleLoginSubmit();
+            });
+            loginEmail.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleLoginSubmit();
+            });
+            loginAdminCode.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleLoginSubmit();
+            });
+
+            function handleLoginSubmit() {
+                const name = loginNama.value.trim();
+                const email = loginEmail.value.trim();
+                const adminCode = loginAdminCode.value.trim();
+
+                if (!name || name.length < 3) {
+                    loginModalError.textContent = '❌ Nama harus diisi minimal 3 karakter.';
+                    loginModalError.style.display = 'block';
+                    loginModalInfo.style.display = 'none';
+                    loginNama.classList.add('shake');
+                    setTimeout(() => loginNama.classList.remove('shake'), 400);
+                    return;
+                }
+
+                if (!email || !email.includes('@')) {
+                    loginModalError.textContent = '❌ Email tidak valid.';
+                    loginModalError.style.display = 'block';
+                    loginModalInfo.style.display = 'none';
+                    loginEmail.classList.add('shake');
+                    setTimeout(() => loginEmail.classList.remove('shake'), 400);
+                    return;
+                }
+
+                if (name.toLowerCase() === 'admin') {
+                    loginModalError.textContent = '❌ Nama "admin" tidak boleh digunakan.';
+                    loginModalError.style.display = 'block';
+                    loginModalInfo.style.display = 'none';
+                    return;
+                }
+
+                if (isUserBanned(name)) {
+                    loginModalError.textContent = '❌ Nama ini telah dibanned oleh admin.';
+                    loginModalError.style.display = 'block';
+                    loginModalInfo.style.display = 'none';
+                    return;
+                }
+
+                const correctOtp = data.settings.adminOtp || '2010';
+                if (adminCode === correctOtp) {
+                    loginModalInfo.textContent = '✅ Kode admin benar! Anda akan masuk sebagai admin.';
+                    loginModalInfo.style.display = 'block';
+                    loginModalError.style.display = 'none';
+                    saveUser('admin', 'admin@simpex.local');
+                    // Log activity
+                    addActivity('admin', 'login', 'Admin login');
+                    hideLoginModal();
+                    updateUserBadge();
+                    renderPaymentPage();
+                    renderBuyerDashboard();
+                    showToast('👑 Selamat datang Admin!', 'success');
+                    if (!document.getElementById('view-admin-dashboard').classList.contains('active')) {
+                        navigateTo('admin-dashboard');
+                    }
+                    return;
+                }
+
+                saveUser(name, email);
+                addActivity(name, 'login', 'User login');
+                hideLoginModal();
+                updateUserBadge();
+                renderPaymentPage();
+                renderBuyerDashboard();
+                showToast(`👋 Selamat datang, ${name}!`, 'success');
+
+                if (isAdminLoggedIn()) {
+                    setAdminLoggedIn(false);
+                }
+            }
+
+            // ==================== VIEW NAVIGATION ====================
+            const views = {
+                payment: document.getElementById('view-payment'),
+                'buyer-dashboard': document.getElementById('view-buyer-dashboard'),
+                'admin-login': document.getElementById('view-admin-login'),
+                'admin-dashboard': document.getElementById('view-admin-dashboard'),
+            };
+
+            const navButtons = document.querySelectorAll('#navLinks button');
+
+            function navigateTo(viewName) {
+                Object.values(views).forEach(v => v.classList.remove('active'));
+                const target = views[viewName];
+                if (target) target.classList.add('active');
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active-link', btn.dataset.view === viewName);
+                });
+                if (viewName === 'admin-dashboard') {
+                    renderAdminDashboard();
+                }
+                if (viewName === 'buyer-dashboard') {
+                    renderBuyerDashboard();
+                }
+                if (viewName === 'payment') {
+                    renderPaymentPage();
+                }
+            }
+
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const view = btn.dataset.view;
+                    if (view === 'admin-dashboard' && !isAdminLoggedIn()) {
+                        navigateTo('admin-login');
+                        return;
+                    }
+                    if (view === 'admin-login' && isAdminLoggedIn()) {
+                        navigateTo('admin-dashboard');
+                        return;
+                    }
+                    if ((view === 'payment' || view === 'buyer-dashboard') && !currentUser) {
+                        showLoginModal();
+                        return;
+                    }
+                    navigateTo(view);
+                });
+            });
+            
+            // ==================== ADMIN LOGIN (via nav) ====================
+            let adminLoggedIn = false;
+
+            function isAdminLoggedIn() {
+                return adminLoggedIn || sessionStorage.getItem('simex_admin') === 'true';
+            }
+
+            function setAdminLoggedIn(val) {
+                adminLoggedIn = val;
+                if (val) sessionStorage.setItem('simex_admin', 'true');
+                else sessionStorage.removeItem('simex_admin');
+            }
+
+            const loginBtn = document.getElementById('btnAdminLogin');
+            const loginUser = document.getElementById('adminUsername');
+            const loginOtp = document.getElementById('adminOtp');
+            const loginError = document.getElementById('loginError');
+
+            loginBtn.addEventListener('click', handleAdminLogin);
+            loginOtp.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleAdminLogin();
+            });
+
+            function handleAdminLogin() {
+                const user = loginUser.value.trim();
+                const otp = loginOtp.value.trim();
+                const correctOtp = data.settings.adminOtp || '2010';
+
+                if (user === 'admin' && otp === correctOtp) {
+                    setAdminLoggedIn(true);
+                    loginError.style.display = 'none';
+                    loginOtp.value = '';
+                    navigateTo('admin-dashboard');
+                    showToast('Selamat datang Admin!', 'success');
+                } else {
+                    loginError.style.display = 'block';
+                    loginOtp.classList.add('shake');
+                    setTimeout(() => loginOtp.classList.remove('shake'), 400);
+                    loginOtp.value = '';
+                    loginOtp.focus();
+                }
+            }
+
+            // ==================== LOGOUT ====================
+            document.getElementById('btnAdminLogout').addEventListener('click', function() {
+                if (confirm('Yakin ingin keluar dari dashboard admin?')) {
+                    setAdminLoggedIn(false);
+                    if (isAdminUser()) {
+                        saveUser(null, null);
+                        updateUserBadge();
+                        showLoginModal();
+                        navigateTo('payment');
+                    } else {
+                        navigateTo('admin-login');
+                    }
+                    showToast('Anda telah keluar.', 'info');
+                }
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (isAdminUser()) {
+                    if (confirm('Yakin ingin keluar dari akun admin?')) {
+                        setAdminLoggedIn(false);
+                        saveUser(null, null);
+                        updateUserBadge();
+                        showLoginModal();
+                        navigateTo('payment');
+                        showToast('Anda telah keluar.', 'info');
+                    }
+                } else {
+                    showToast('❌ Pembeli tidak bisa logout.', 'error');
+                }
+            });
+
+            // ==================== LANGUAGE TOGGLE ====================
+            document.getElementById('langToggle').addEventListener('click', function() {
+                const newLang = currentLang === 'id' ? 'en' : 'id';
+                saveLang(newLang);
+                this.textContent = newLang === 'id' ? '🌐 ID' : '🌐 EN';
+                applyTranslations();
+                // Re-render dynamic content
+                renderPaymentPage();
+                renderBuyerDashboard();
+                if (document.getElementById('view-admin-dashboard').classList.contains('active')) {
+                    renderAdminDashboard();
+                }
+                showToast(`Bahasa diubah ke ${newLang === 'id' ? 'Indonesia' : 'English'}`, 'info');
+            });
+
+            // ==================== PAYMENT ====================
+            let selectedMethod = 'dana';
+
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedMethod = this.dataset.method;
+                });
+            });
+
+            const copyBtn = document.getElementById('copyDanaBtn');
+            const danaDisplay = document.getElementById('danaNumberDisplay');
+
+            copyBtn.addEventListener('click', function() {
+                const number = danaDisplay.textContent.trim();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(number).then(() => {
+                        this.textContent = '✅ Tersalin!';
+                        this.classList.add('copied');
+                        showToast('Nomor DANA berhasil disalin!', 'success');
+                        setTimeout(() => {
+                            this.textContent = '📋 Salin';
+                            this.classList.remove('copied');
+                        }, 2500);
+                    }).catch(() => {
+                        fallbackCopy(number);
+                    });
+                } else {
+                    fallbackCopy(number);
+                }
+            });
+
+            function fallbackCopy(text) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Nomor DANA berhasil disalin!', 'success');
+                    copyBtn.textContent = '✅ Tersalin!';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.textContent = '📋 Salin';
+                        copyBtn.classList.remove('copied');
+                    }, 2500);
+                } catch (e) {
+                    showToast('Gagal menyalin, salin manual: ' + text, 'error');
+                }
+                document.body.removeChild(textArea);
+            }
+
+            const qrisWrapper = document.getElementById('qrisWrapper');
+            const qrisImageContainer = document.getElementById('qrisImageContainer');
+            const zoomLevelSpan = document.getElementById('qrisZoomLevel');
+
+            let qrisScale = 1;
+            let qrisTranslateX = 0;
+            let qrisTranslateY = 0;
+            let isDragging = false;
+            let startX = 0,
+                startY = 0;
+            let lastTranslateX = 0,
+                lastTranslateY = 0;
+            let initialPinchDist = 0;
+            let initialPinchScale = 1;
+
+            function updateQrisTransform() {
+                qrisImageContainer.style.transform =
+                    `scale(${qrisScale}) translate(${qrisTranslateX}px, ${qrisTranslateY}px)`;
+                zoomLevelSpan.textContent = Math.round(qrisScale * 100) + '%';
+            }
+
+            function resetQris() {
+                qrisScale = 1;
+                qrisTranslateX = 0;
+                qrisTranslateY = 0;
+                updateQrisTransform();
+            }
+
+            function zoomQris(factor) {
+                const newScale = Math.min(Math.max(qrisScale * factor, 0.5), 5);
+                if (newScale !== qrisScale) {
+                    qrisScale = newScale;
+                    updateQrisTransform();
+                }
+            }
+
+            document.getElementById('qrisZoomIn').addEventListener('click', () => zoomQris(1.2));
+            document.getElementById('qrisZoomOut').addEventListener('click', () => zoomQris(0.8));
+            document.getElementById('qrisReset').addEventListener('click', resetQris);
+
+            qrisWrapper.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.qris-controls')) return;
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                lastTranslateX = qrisTranslateX;
+                lastTranslateY = qrisTranslateY;
+                qrisWrapper.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                qrisTranslateX = lastTranslateX + dx;
+                qrisTranslateY = lastTranslateY + dy;
+                updateQrisTransform();
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    qrisWrapper.style.cursor = 'grab';
+                }
+            });
+
+            qrisWrapper.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.qris-controls')) return;
+                const touches = e.touches;
+                if (touches.length === 1) {
+                    isDragging = true;
+                    startX = touches[0].clientX;
+                    startY = touches[0].clientY;
+                    lastTranslateX = qrisTranslateX;
+                    lastTranslateY = qrisTranslateY;
+                } else if (touches.length === 2) {
+                    isDragging = false;
+                    const t1 = touches[0],
+                        t2 = touches[1];
+                    const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                    initialPinchDist = dist;
+                    initialPinchScale = qrisScale;
+                }
+                e.preventDefault();
+            }, { passive: false });
+
+            qrisWrapper.addEventListener('touchmove', (e) => {
+                const touches = e.touches;
+                if (touches.length === 1 && isDragging) {
+                    const dx = touches[0].clientX - startX;
+                    const dy = touches[0].clientY - startY;
+                    qrisTranslateX = lastTranslateX + dx;
+                    qrisTranslateY = lastTranslateY + dy;
+                    updateQrisTransform();
+                } else if (touches.length === 2) {
+                    const t1 = touches[0],
+                        t2 = touches[1];
+                    const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                    const scaleFactor = dist / initialPinchDist;
+                    const newScale = Math.min(Math.max(initialPinchScale * scaleFactor, 0.5), 5);
+                    if (newScale !== qrisScale) {
+                        qrisScale = newScale;
+                        updateQrisTransform();
+                    }
+                }
+                e.preventDefault();
+            }, { passive: false });
+
+            qrisWrapper.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+
+            qrisWrapper.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                zoomQris(delta);
+            }, { passive: false });
+            
+            // ==================== PAYMENT FORM ====================
+            const receiptInput = document.getElementById('payReceipt');
+            const receiptFileName = document.getElementById('receiptFileName');
+            const receiptPreview = document.getElementById('receiptPreview');
+            const receiptPreviewImg = document.getElementById('receiptPreviewImg');
+            const fileUploadBox = document.getElementById('fileUploadBox');
+
+            receiptInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    receiptFileName.textContent = file.name;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        receiptPreviewImg.src = e.target.result;
+                        receiptPreview.classList.add('show');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    receiptFileName.textContent = '(belum ada)';
+                    receiptPreview.classList.remove('show');
+                }
+            });
+
+            fileUploadBox.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'INPUT') {
+                    receiptInput.click();
+                }
+            });
+
+            document.getElementById('btnSubmitPayment').addEventListener('click', function() {
+                if (!currentUser) {
+                    showLoginModal();
+                    return;
+                }
+                if (isUserBanned(currentUser)) {
+                    showToast('❌ Akun Anda telah dibanned oleh admin.', 'error');
+                    return;
+                }
+                if (isAdminUser()) {
+                    showToast('❌ Admin tidak bisa melakukan transaksi pembayaran.', 'error');
+                    return;
+                }
+
+                const amount = document.getElementById('payAmount').value.trim();
+                const phone = document.getElementById('payPhone').value.trim();
+                const note = document.getElementById('payNote').value.trim();
+                const file = receiptInput.files[0];
+
+                if (!amount || Number(amount) < 1000) {
+                    showToast('Masukkan nominal minimal Rp 1.000', 'error');
+                    return;
+                }
+                if (!phone) {
+                    showToast('Masukkan nomor HP/WA', 'error');
+                    return;
+                }
+                if (!file) {
+                    showToast('Upload bukti transfer terlebih dahulu', 'error');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const receiptBase64 = e.target.result;
+                    const tx = {
+                        id: generateId(),
+                        userName: currentUser,
+                        method: selectedMethod,
+                        amount: Number(amount),
+                        buyerName: currentUser,
+                        phone: phone,
+                        note: note || '-',
+                        receipt: receiptBase64,
+                        status: 'pending',
+                        timestamp: new Date().toISOString(),
+                        chat: []
+                    };
+                    data.transactions.push(tx);
+                    saveData();
+                    addActivity(currentUser, 'transaction', `Transaksi ${tx.id} dibuat, nominal ${formatRupiah(tx.amount)}`);
+
+                    document.getElementById('payAmount').value = '';
+                    document.getElementById('payPhone').value = '';
+                    document.getElementById('payNote').value = '';
+                    receiptInput.value = '';
+                    receiptFileName.textContent = '(belum ada)';
+                    receiptPreview.classList.remove('show');
+
+                    showToast(`✅ Transaksi ${tx.id} berhasil! Tunggu konfirmasi admin.`, 'success');
+                    navigateTo('buyer-dashboard');
+                    renderBuyerDashboard();
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // ==================== RENDER PAYMENT PAGE ====================
+            function renderPaymentPage() {
+                const danaNumber = data.settings.danaNumber || '089519371436';
+                document.getElementById('danaNumberDisplay').textContent = danaNumber;
+
+                const qrisDisplay = document.getElementById('qrisDisplay');
+                if (data.settings.qrisImage) {
+                    qrisDisplay.innerHTML =
+                        `<img src="${data.settings.qrisImage}" alt="QRIS" style="max-width:100%; max-height:300px; width:auto; height:auto; border-radius:8px; display:block; pointer-events:none; touch-action:none;" />`;
+                } else {
+                    qrisDisplay.innerHTML =
+                        `<span style="font-size:40px;">⬛</span><div class="qris-placeholder-text">${t('qrisPlaceholder')}</div>`;
+                }
+                resetQris();
+
+                const nameInput = document.getElementById('payBuyerName');
+                if (currentUser) {
+                    nameInput.value = currentUser;
+                } else {
+                    nameInput.value = '(belum login)';
+                }
+            }
+
+            // ==================== BUYER DASHBOARD ====================
+            function renderBuyerDashboard() {
+                if (!currentUser) {
+                    document.getElementById('buyerTransactionInfo').innerHTML =
+                        `<div class="empty-state"><div class="empty-icon">👤</div><p>Silakan login terlebih dahulu.</p></div>`;
+                    document.getElementById('buyerTransactionDetail').style.display = 'none';
+                    document.getElementById('txStatusBadge').textContent = 'Belum login';
+                    document.getElementById('buyerHistory').innerHTML =
+                        `<div class="empty-state"><p style="font-size:13px;">${t('historyEmpty')}</p></div>`;
+                    renderBuyerChat(null);
+                    renderBuyerNotifications();
+                    return;
+                }
+
+                const tx = getActiveTransaction(currentUser);
+                const infoDiv = document.getElementById('buyerTransactionInfo');
+                const detailDiv = document.getElementById('buyerTransactionDetail');
+                const badge = document.getElementById('txStatusBadge');
+
+                if (!tx) {
+                    infoDiv.style.display = 'block';
+                    detailDiv.style.display = 'none';
+                    badge.textContent = 'Belum ada';
+                    document.getElementById('buyerHistory').innerHTML =
+                        `<div class="empty-state"><p style="font-size:13px;">${t('historyEmpty')}</p></div>`;
+                } else {
+                    infoDiv.style.display = 'none';
+                    detailDiv.style.display = 'block';
+                    document.getElementById('buyerTxId').textContent = tx.id;
+                    document.getElementById('buyerTxAmount').textContent = formatRupiah(tx.amount);
+                    document.getElementById('buyerTxMethod').textContent = tx.method.toUpperCase();
+                    const statusEl = document.getElementById('buyerTxStatus');
+                    statusEl.textContent = getStatusBadge(tx.status);
+                    statusEl.className = `status-badge ${getStatusClass(tx.status)}`;
+                    document.getElementById('buyerTxDate').textContent = formatDate(tx.timestamp);
+
+                    const receiptLink = document.getElementById('buyerTxReceiptLink');
+                    receiptLink.onclick = () => {
+                        if (tx.receipt) openReceiptModal(tx.receipt);
+                        else showToast('Bukti tidak tersedia', 'error');
+                    };
+                    badge.textContent = tx.status === 'pending' ? '⏳ Menunggu' : tx.status === 'confirmed' ? '✅ Selesai' :
+                        '❌ Ditolak';
+
+                    const historyDiv = document.getElementById('buyerHistory');
+                    const allTx = getBuyerTransactions(currentUser);
+                    if (allTx.length === 0) {
+                        historyDiv.innerHTML = `<div class="empty-state"><p style="font-size:13px;">${t('historyEmpty')}</p></div>`;
+                    } else {
+                        historyDiv.innerHTML = allTx.map(t => `
+                            <div class="transaction-item">
+                                <div class="tx-info">
+                                    <div class="tx-id">${t.id}</div>
+                                    <div class="tx-meta">${formatDate(t.timestamp)} &bull; ${t.method.toUpperCase()}</div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span class="status-badge ${getStatusClass(t.status)}" style="font-size:11px; padding:2px 10px;">${getStatusBadge(t.status)}</span>
+                                    <span class="tx-amount" style="font-size:14px;">${formatRupiah(t.amount)}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+
+                renderBuyerChat(tx);
+                renderBuyerNotifications();
+            }
+
+            // ==================== BUYER CHAT ====================
+            let currentBuyerTx = null;
+
+            function renderBuyerChat(tx) {
+                const container = document.getElementById('buyerChatMessages');
+                if (!tx) {
+                    container.innerHTML =
+                        `<div class="empty-state" style="padding:30px 10px;"><div class="empty-icon">💬</div><p>${t('chatEmpty')}</p></div>`;
+                    currentBuyerTx = null;
+                    return;
+                }
+
+                currentBuyerTx = tx;
+                const messages = tx.chat || [];
+
+                if (messages.length === 0) {
+                    container.innerHTML =
+                        `<div class="empty-state" style="padding:30px 10px;"><div class="empty-icon">💬</div><p>${t('chatEmpty')}</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = messages.map(msg => `
+                    <div class="chat-message ${msg.from === 'buyer' ? 'buyer' : 'admin'}">
+                        ${msg.from === 'admin' ? '<span class="msg-sender">👤 Admin</span>' : ''}
+                        ${msg.message}
+                        <span class="msg-time">${formatDate(msg.timestamp)}</span>
+                    </div>
+                `).join('');
+
+                container.scrollTop = container.scrollHeight;
+
+                const unreadBadge = document.getElementById('chatUnreadBadge');
+                const unread = messages.filter(m => m.from === 'admin' && !m.read).length;
+                if (unread > 0) {
+                    unreadBadge.style.display = 'inline';
+                    unreadBadge.textContent = `● ${unread} baru`;
+                } else {
+                    unreadBadge.style.display = 'none';
+                }
+            }
+
+            document.getElementById('buyerChatSend').addEventListener('click', sendBuyerMessage);
+            document.getElementById('buyerChatInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendBuyerMessage();
+            });
+
+            function sendBuyerMessage() {
+                if (!currentUser) {
+                    showLoginModal();
+                    return;
+                }
+                if (isUserBanned(currentUser)) {
+                    showToast('❌ Akun Anda telah dibanned.', 'error');
+                    return;
+                }
+                if (isAdminUser()) {
+                    showToast('❌ Admin tidak bisa chat sebagai pembeli.', 'error');
+                    return;
+                }
+                const input = document.getElementById('buyerChatInput');
+                const msg = input.value.trim();
+                if (!msg) return;
+                if (!currentBuyerTx) {
+                    showToast('Belum ada transaksi aktif untuk chat.', 'error');
+                    return;
+                }
+
+                const tx = data.transactions.find(t => t.id === currentBuyerTx.id);
+                if (!tx) {
+                    showToast('Transaksi tidak ditemukan.', 'error');
+                    return;
+                }
+
+                tx.chat = tx.chat || [];
+                tx.chat.push({
+                    from: 'buyer',
+                    message: msg,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                });
+                saveData();
+                addActivity(currentUser, 'chat', `Pesan dikirim ke admin: "${msg}"`);
+
+                // Auto-reply check
+                const autoReply = data.settings.autoReplies.find(r => msg.toLowerCase().includes(r.keyword.toLowerCase()));
+                if (autoReply) {
+                    setTimeout(() => {
+                        tx.chat.push({
+                            from: 'admin',
+                            message: autoReply.message,
+                            timestamp: new Date().toISOString(),
+                            read: true
+                        });
+                        saveData();
+                        addActivity('admin', 'autoreply', `Auto-reply ke ${currentUser}: "${autoReply.message}" (keyword: ${autoReply.keyword})`);
+                        renderBuyerChat(tx);
+                        if (document.getElementById('view-admin-dashboard').classList.contains('active')) {
+                            renderAdminDashboard();
+                        }
+                        showToast('🤖 Auto-reply terkirim!', 'info');
+                    }, 500);
+                }
+
+                input.value = '';
+                renderBuyerChat(tx);
+                if (document.getElementById('view-admin-dashboard').classList.contains('active')) {
+                    renderAdminDashboard();
+                }
+                showToast('Pesan terkirim ke admin ✅', 'success');
+            }
+
+            // ==================== NOTIFICATIONS (BUYER) ====================
+            function renderBuyerNotifications() {
+                const container = document.getElementById('buyerNotifications');
+                const badge = document.getElementById('notifBadge');
+                if (!currentUser) {
+                    container.innerHTML =
+                        `<div class="empty-state"><div class="empty-icon">🔔</div><p>Login untuk melihat notifikasi.</p></div>`;
+                    badge.textContent = '0';
+                    return;
+                }
+
+                const notifs = data.notifications.filter(n => n.toUser === currentUser);
+                const unreadCount = notifs.filter(n => !n.read).length;
+                badge.textContent = unreadCount;
+
+                if (notifs.length === 0) {
+                    container.innerHTML =
+                        `<div class="empty-state"><div class="empty-icon">📭</div><p>${t('notifEmpty')}</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = notifs.map(n => `
+                    <div class="notification-item ${n.read ? 'read' : 'unread'}" data-id="${n.id}">
+                        <div class="notif-content">
+                            <div class="notif-message">${n.message}</div>
+                            ${n.image ? `<img src="${n.image}" class="notif-image" alt="notifikasi" />` : ''}
+                            <div class="notif-time">${formatDate(n.timestamp)}</div>
+                        </div>
+                        ${!n.read ? '<span class="notif-badge">Baru</span>' : ''}
+                    </div>
+                `).join('');
+
+                notifs.forEach(n => {
+                    if (!n.read) {
+                        n.read = true;
+                    }
+                });
+                saveData();
+                badge.textContent = '0';
+            }
+            
+            // ==================== ADMIN ACTIVITY LOG ====================
+            function addActivity(user, action, details) {
+                data.activityLog.push({
+                    user: user,
+                    action: action,
+                    details: details || '',
+                    timestamp: new Date().toISOString()
+                });
+                // Keep last 500 entries
+                if (data.activityLog.length > 500) {
+                    data.activityLog = data.activityLog.slice(-500);
+                }
+                saveData();
+            }
+
+            // ==================== ADMIN DASHBOARD ====================
+            function renderAdminDashboard() {
+                renderAdminTransactions();
+                renderAdminChatSelector();
+                renderAdminUsers();
+                renderAdminNotifications();
+                renderAdminAutoReply();
+                renderAdminActivity();
+                renderAdminSettings();
+            }
+
+            function renderAdminTransactions() {
+                const container = document.getElementById('adminTransactionList');
+                const countEl = document.getElementById('txCount');
+                const txs = data.transactions.slice().reverse();
+
+                countEl.textContent = txs.length;
+
+                if (txs.length === 0) {
+                    container.innerHTML =
+                        `<div class="empty-state"><div class="empty-icon">📭</div><p>Belum ada transaksi.</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = txs.map(tx => `
+                    <div class="admin-tx-item" style="border-left-color: ${tx.status === 'confirmed' ? 'var(--green)' : tx.status === 'rejected' ? 'var(--red)' : 'var(--gold)'};">
+                        <div class="tx-left">
+                            <div class="tx-id">${tx.id}</div>
+                            <div class="tx-detail">${tx.buyerName} (${tx.userName}) &bull; ${tx.phone} &bull; ${formatDate(tx.timestamp)}</div>
+                            <div class="tx-detail" style="font-size:12px; color:var(--text-muted);">
+                                ${tx.method.toUpperCase()} ${tx.note && tx.note !== '-' ? '&bull; '+tx.note : ''}
+                                ${tx.receipt ? ' &bull; <span class="tx-receipt" data-receipt="'+tx.receipt+'">📎 Lihat Bukti</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="tx-right">
+                            <span class="status-badge ${getStatusClass(tx.status)}">${getStatusBadge(tx.status)}</span>
+                            <span class="tx-amount">${formatRupiah(tx.amount)}</span>
+                            <div class="tx-actions">
+                                ${tx.status === 'pending' ? `
+                                    <button class="btn btn-success btn-sm" data-action="confirm" data-id="${tx.id}">✅ Konfirm</button>
+                                    <button class="btn btn-danger btn-sm" data-action="reject" data-id="${tx.id}">❌ Tolak</button>
+                                ` : `
+                                    <button class="btn btn-outline btn-sm" style="font-size:11px; cursor:default;" disabled>${tx.status === 'confirmed' ? '✅ Selesai' : '❌ Ditolak'}</button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.querySelectorAll('[data-action="confirm"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        confirmTransaction(id);
+                    });
+                });
+                container.querySelectorAll('[data-action="reject"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        rejectTransaction(id);
+                    });
+                });
+
+                container.querySelectorAll('.tx-receipt').forEach(el => {
+                    el.addEventListener('click', function() {
+                        const src = this.dataset.receipt;
+                        if (src) openReceiptModal(src);
+                    });
+                });
+            }
+
+            function confirmTransaction(id) {
+                const tx = data.transactions.find(t => t.id === id);
+                if (!tx) return;
+                tx.status = 'confirmed';
+                tx.chat = tx.chat || [];
+                tx.chat.push({
+                    from: 'admin',
+                    message: '✅ Pembayaran telah dikonfirmasi. Terima kasih!',
+                    timestamp: new Date().toISOString(),
+                    read: true
+                });
+                saveData();
+                addActivity('admin', 'confirm', `Transaksi ${id} dikonfirmasi untuk ${tx.userName}`);
+                showToast(`✅ Transaksi ${id} dikonfirmasi`, 'success');
+                renderAdminDashboard();
+                if (document.getElementById('view-buyer-dashboard').classList.contains('active')) {
+                    renderBuyerDashboard();
+                }
+            }
+
+            function rejectTransaction(id) {
+                const tx = data.transactions.find(t => t.id === id);
+                if (!tx) return;
+                tx.status = 'rejected';
+                tx.chat = tx.chat || [];
+                tx.chat.push({
+                    from: 'admin',
+                    message: '❌ Pembayaran ditolak. Silakan cek kembali bukti transfer atau hubungi admin.',
+                    timestamp: new Date().toISOString(),
+                    read: true
+                });
+                saveData();
+                addActivity('admin', 'reject', `Transaksi ${id} ditolak untuk ${tx.userName}`);
+                showToast(`❌ Transaksi ${id} ditolak`, 'error');
+                renderAdminDashboard();
+                if (document.getElementById('view-buyer-dashboard').classList.contains('active')) {
+                    renderBuyerDashboard();
+                }
+            }
+
+            // ==================== ADMIN CHAT ====================
+            let selectedAdminChatId = null;
+
+            function renderAdminChatSelector() {
+                const select = document.getElementById('adminChatSelect');
+                const txs = data.transactions.slice().reverse();
+                const currentVal = select.value;
+
+                select.innerHTML = `<option value="">-- Pilih transaksi --</option>`;
+                txs.forEach(tx => {
+                    const opt = document.createElement('option');
+                    opt.value = tx.id;
+                    opt.textContent = `${tx.id} - ${tx.buyerName} (${tx.userName})`;
+                    select.appendChild(opt);
+                });
+
+                if (currentVal && data.transactions.find(t => t.id === currentVal)) {
+                    select.value = currentVal;
+                } else if (txs.length > 0) {
+                    select.value = txs[0].id;
+                }
+
+                if (select.value) {
+                    selectedAdminChatId = select.value;
+                    renderAdminChat(select.value);
+                } else {
+                    selectedAdminChatId = null;
+                    document.getElementById('adminChatMessages').innerHTML =
+                        `<div class="empty-state" style="padding:30px 10px;"><div class="empty-icon">💬</div><p>Pilih transaksi di atas untuk mulai chat.</p></div>`;
+                }
+
+                select.addEventListener('change', function() {
+                    selectedAdminChatId = this.value;
+                    if (this.value) {
+                        renderAdminChat(this.value);
+                    } else {
+                        document.getElementById('adminChatMessages').innerHTML =
+                            `<div class="empty-state" style="padding:30px 10px;"><div class="empty-icon">💬</div><p>Pilih transaksi di atas untuk mulai chat.</p></div>`;
+                    }
+                });
+            }
+
+            function renderAdminChat(txId) {
+                const container = document.getElementById('adminChatMessages');
+                const tx = data.transactions.find(t => t.id === txId);
+                if (!tx) {
+                    container.innerHTML =
+                        `<div class="empty-state" style="padding:30px 10px;"><div class="empty-icon">💬</div><p>Transaksi tidak ditemukan.</p></div>`;
+                    return;
+                }
+
+                const messages = tx.chat || [];
+
+                if (messages.length === 0) {
+                    container.innerHTML =
+                        `<div class="empty-state" style="padding:30px 10px;"><div class="empty-icon">💬</div><p>Belum ada pesan. Mulai chat dengan pembeli.</p></div>`;
+                    return;
+                }
+
+                messages.forEach(m => { if (m.from === 'admin') m.read = true; });
+                saveData();
+
+                container.innerHTML = messages.map(msg => `
+                    <div class="chat-message ${msg.from === 'admin' ? 'admin' : 'buyer'}">
+                        ${msg.from === 'buyer' ? '<span class="msg-sender">👤 Pembeli</span>' : ''}
+                        ${msg.message}
+                        <span class="msg-time">${formatDate(msg.timestamp)}</span>
+                    </div>
+                `).join('');
+
+                container.scrollTop = container.scrollHeight;
+            }
+
+            document.getElementById('adminChatSend').addEventListener('click', sendAdminMessage);
+            document.getElementById('adminChatInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendAdminMessage();
+            });
+
+            document.getElementById('quickReplySelect').addEventListener('change', function() {
+                const val = this.value;
+                if (val) {
+                    document.getElementById('adminChatInput').value = val;
+                    this.value = '';
+                }
+            });
+            
+            function sendAdminMessage() {
+                const input = document.getElementById('adminChatInput');
+                const msg = input.value.trim();
+                if (!msg) return;
+                if (!selectedAdminChatId) {
+                    showToast('Pilih transaksi terlebih dahulu.', 'error');
+                    return;
+                }
+
+                const tx = data.transactions.find(t => t.id === selectedAdminChatId);
+                if (!tx) {
+                    showToast('Transaksi tidak ditemukan.', 'error');
+                    return;
+                }
+
+                tx.chat = tx.chat || [];
+                tx.chat.push({
+                    from: 'admin',
+                    message: msg,
+                    timestamp: new Date().toISOString(),
+                    read: true
+                });
+                saveData();
+                addActivity('admin', 'chat', `Pesan admin ke ${tx.userName}: "${msg}"`);
+
+                input.value = '';
+                renderAdminChat(selectedAdminChatId);
+                if (document.getElementById('view-buyer-dashboard').classList.contains('active')) {
+                    renderBuyerDashboard();
+                }
+                showToast('Pesan terkirim ke pembeli ✅', 'success');
+            }
+
+            document.getElementById('btnAdminChatRefresh').addEventListener('click', () => {
+                if (selectedAdminChatId) {
+                    renderAdminChat(selectedAdminChatId);
+                    showToast('Chat diperbarui', 'info');
+                }
+            });
+
+            // ==================== ADMIN USERS ====================
+            function renderAdminUsers() {
+                const container = document.getElementById('adminUserList');
+                const countEl = document.getElementById('userCount');
+                const users = getAllUsers();
+
+                countEl.textContent = users.length;
+
+                if (users.length === 0) {
+                    container.innerHTML =
+                        `<div class="empty-state"><div class="empty-icon">👤</div><p>Belum ada pengguna terdaftar.</p></div>`;
+                    return;
+                }
+
+                let html = '';
+                html += `<div style="margin-bottom:12px;"><strong style="color:var(--text-secondary);">📋 Daftar Pengguna</strong></div>`;
+
+                users.forEach(u => {
+                    const banned = isUserBanned(u);
+                    const isAdmin = (u.toLowerCase() === 'admin');
+                    const userData = data.users.find(user => user.username === u);
+                    const email = userData ? userData.email : '-';
+                    const hasTransactions = data.transactions.some(t => t.userName === u);
+                    html += `
+                        <div class="user-item">
+                            <div>
+                                <span class="user-name">${u} ${isAdmin ? '👑' : ''}</span>
+                                <span class="user-email">📧 ${email}</span>
+                                <span class="user-status ${banned ? 'banned' : 'active'}">${banned ? '⛔ Banned' : '✅ Aktif'}</span>
+                                ${isAdmin ? '<span style="font-size:11px; color:var(--gold);">(Admin - tidak bisa diban/dihapus)</span>' : ''}
+                                ${!hasTransactions && !isAdmin ? '<span style="font-size:11px; color:var(--text-muted);">(tidak ada transaksi)</span>' : ''}
+                            </div>
+                            <div class="user-actions">
+                                ${!isAdmin ? (banned ? 
+                                    `<button class="btn-unban" data-user="${u}">Unban</button>` :
+                                    `<button class="btn-ban" data-user="${u}">Ban</button>`
+                                ) : ''}
+                                ${!isAdmin ? `<button class="btn-delete" data-user="${u}">🗑️ Hapus</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+                container.querySelectorAll('.btn-ban').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const user = this.dataset.user;
+                        if (user.toLowerCase() === 'admin') {
+                            showToast('❌ Admin tidak bisa diban.', 'error');
+                            return;
+                        }
+                        if (user === currentUser) {
+                            showToast('❌ Tidak bisa membanned diri sendiri.', 'error');
+                            return;
+                        }
+                        if (!data.settings.bannedUsers) data.settings.bannedUsers = [];
+                        if (!data.settings.bannedUsers.includes(user)) {
+                            data.settings.bannedUsers.push(user);
+                            saveData();
+                            addActivity('admin', 'ban', `User ${user} dibanned`);
+                            showToast(`⛔ ${user} telah dibanned.`, 'info');
+                            renderAdminUsers();
+                            if (currentUser === user) {
+                                saveUser(null, null);
+                                location.reload();
+                            }
+                        }
+                    });
+                });
+
+                container.querySelectorAll('.btn-unban').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const user = this.dataset.user;
+                        if (data.settings.bannedUsers) {
+                            data.settings.bannedUsers = data.settings.bannedUsers.filter(u => u !== user);
+                            saveData();
+                            addActivity('admin', 'unban', `User ${user} di-unban`);
+                            showToast(`✅ ${user} telah di-unban.`, 'success');
+                            renderAdminUsers();
+                            if (currentUser === user) {
+                                updateUserBadge();
+                            }
+                        }
+                    });
+                });
+
+                container.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const user = this.dataset.user;
+                        if (user.toLowerCase() === 'admin') {
+                            showToast('❌ Admin tidak bisa dihapus.', 'error');
+                            return;
+                        }
+                        if (user === currentUser) {
+                            showToast('❌ Tidak bisa menghapus diri sendiri.', 'error');
+                            return;
+                        }
+                        if (!confirm(`⚠️ Yakin ingin menghapus user "${user}" beserta semua transaksi dan chat-nya? Tindakan ini tidak bisa dibatalkan.`)) {
+                            return;
+                        }
+                        deleteUser(user);
+                    });
+                });
+            }
+
+            function deleteUser(username) {
+                data.transactions = data.transactions.filter(t => t.userName !== username);
+                data.users = data.users.filter(u => u.username !== username);
+                if (data.settings.bannedUsers) {
+                    data.settings.bannedUsers = data.settings.bannedUsers.filter(u => u !== username);
+                }
+                data.notifications = data.notifications.filter(n => n.toUser !== username);
+                saveData();
+                addActivity('admin', 'delete_user', `User ${username} dihapus`);
+                showToast(`🗑️ User "${username}" dan semua data terkait telah dihapus.`, 'success');
+                renderAdminUsers();
+                if (currentUser === username) {
+                    saveUser(null, null);
+                    location.reload();
+                }
+                if (document.getElementById('view-buyer-dashboard').classList.contains('active')) {
+                    renderBuyerDashboard();
+                }
+            }
+
+            // ==================== ADMIN NOTIFICATIONS ====================
+            function renderAdminNotifications() {
+                const select = document.getElementById('notifUserSelect');
+                const users = getAllUsers().filter(u => u.toLowerCase() !== 'admin');
+                select.innerHTML = `<option value="">-- Pilih user --</option>`;
+                users.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u;
+                    opt.textContent = u;
+                    select.appendChild(opt);
+                });
+
+                const container = document.getElementById('adminNotificationList');
+                const notifs = data.notifications.slice().reverse();
+                if (notifs.length === 0) {
+                    container.innerHTML =
+                        `<div class="empty-state"><div class="empty-icon">📭</div><p>Belum ada notifikasi terkirim.</p></div>`;
+                    return;
+                }
+                container.innerHTML = notifs.map(n => `
+                    <div class="notification-item read" style="border-left-color: var(--text-muted);">
+                        <div class="notif-content">
+                            <div><strong>Untuk:</strong> ${n.toUser}</div>
+                            <div class="notif-message">${n.message}</div>
+                            ${n.image ? `<img src="${n.image}" class="notif-image" alt="notifikasi" />` : ''}
+                            <div class="notif-time">${formatDate(n.timestamp)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('btnSendNotif').addEventListener('click', function() {
+                const toUser = document.getElementById('notifUserSelect').value;
+                const message = document.getElementById('notifMessage').value.trim();
+                const fileInput = document.getElementById('notifImage');
+                const file = fileInput.files[0];
+
+                if (!toUser) {
+                    showToast('Pilih user tujuan.', 'error');
+                    return;
+                }
+                if (!message) {
+                    showToast('Pesan tidak boleh kosong.', 'error');
+                    return;
+                }
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imageBase64 = e.target.result;
+                        sendNotification(toUser, message, imageBase64);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    sendNotification(toUser, message, null);
+                }
+            });
+
+            function sendNotification(toUser, message, image) {
+                const notif = {
+                    id: 'NOTIF-' + Date.now().toString(36).toUpperCase(),
+                    toUser: toUser,
+                    fromAdmin: true,
+                    message: message,
+                    image: image || null,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                };
+                data.notifications.push(notif);
+                saveData();
+                addActivity('admin', 'notification', `Notifikasi ke ${toUser}: "${message}"`);
+                showToast(`📨 Notifikasi dikirim ke ${toUser}`, 'success');
+                document.getElementById('notifMessage').value = '';
+                document.getElementById('notifImage').value = '';
+                document.getElementById('notifFileName').textContent = '(belum ada)';
+                renderAdminNotifications();
+                if (document.getElementById('view-buyer-dashboard').classList.contains('active')) {
+                    renderBuyerDashboard();
+                }
+            }
+
+            document.getElementById('notifImage').addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    document.getElementById('notifFileName').textContent = file.name;
+                } else {
+                    document.getElementById('notifFileName').textContent = '(belum ada)';
+                }
+            });
+
+            // ==================== ADMIN AUTO-REPLY ====================
+            function renderAdminAutoReply() {
+                const container = document.getElementById('autoReplyList');
+                const replies = data.settings.autoReplies || [];
+
+                if (replies.length === 0) {
+                    container.innerHTML =
+                        `<div class="empty-state"><div class="empty-icon">🤖</div><p>Belum ada auto-reply.</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = replies.map((r, index) => `
+                    <div class="auto-reply-item">
+                        <span class="reply-keyword">🔑 ${r.keyword}</span>
+                        <span class="reply-message">${r.message}</span>
+                        <div class="reply-actions">
+                            <button class="btn-remove-reply" data-index="${index}">Hapus</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.querySelectorAll('.btn-remove-reply').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        data.settings.autoReplies.splice(index, 1);
+                        saveData();
+                        addActivity('admin', 'autoreply_delete', `Auto-reply dihapus`);
+                        renderAdminAutoReply();
+                        showToast('Auto-reply dihapus.', 'info');
+                    });
+                });
+            }
+
+            document.getElementById('btnAddReply').addEventListener('click', function() {
+                const keyword = document.getElementById('replyKeyword').value.trim();
+                const message = document.getElementById('replyMessage').value.trim();
+
+                if (!keyword || !message) {
+                    showToast('Isi keyword dan pesan.', 'error');
+                    return;
+                }
+
+                if (!data.settings.autoReplies) data.settings.autoReplies = [];
+                data.settings.autoReplies.push({ keyword, message });
+                saveData();
+                addActivity('admin', 'autoreply_add', `Auto-reply: "${keyword}" → "${message}"`);
+                document.getElementById('replyKeyword').value = '';
+                document.getElementById('replyMessage').value = '';
+                renderAdminAutoReply();
+                showToast('✅ Auto-reply ditambahkan!', 'success');
+            });
+            
+            // ==================== ADMIN ACTIVITY LOG ====================
+            function renderAdminActivity() {
+                const container = document.getElementById('adminActivityList');
+                const logs = data.activityLog.slice().reverse().slice(0, 100);
+
+                if (logs.length === 0) {
+                    container.innerHTML =
+                        `<div class="empty-state"><div class="empty-icon">📋</div><p>Belum ada aktivitas.</p></div>`;
+                    return;
+                }
+
+                const icons = {
+                    login: '🔑',
+                    transaction: '💳',
+                    chat: '💬',
+                    confirm: '✅',
+                    reject: '❌',
+                    ban: '⛔',
+                    unban: '✅',
+                    delete_user: '🗑️',
+                    notification: '🔔',
+                    autoreply: '🤖',
+                    autoreply_add: '🤖',
+                    autoreply_delete: '🤖',
+                };
+
+                container.innerHTML = logs.map(log => `
+                    <div class="activity-item">
+                        <div class="activity-icon">${icons[log.action] || '📌'}</div>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>${log.user}</strong> ${log.details}</div>
+                            <div class="activity-time">${formatDate(log.timestamp)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // ==================== ADMIN SETTINGS ====================
+            function renderAdminSettings() {
+                document.getElementById('settingDana').value = data.settings.danaNumber || '089519371436';
+                document.getElementById('settingAdminOtp').value = data.settings.adminOtp || '2010';
+
+                const qrisPreview = document.getElementById('qrisPreviewContainer');
+                const qrisImg = document.getElementById('qrisPreviewImg');
+                if (data.settings.qrisImage) {
+                    qrisPreview.style.display = 'block';
+                    qrisImg.src = data.settings.qrisImage;
+                } else {
+                    qrisPreview.style.display = 'none';
+                }
+            }
+
+            document.getElementById('btnSaveDana').addEventListener('click', function() {
+                const val = document.getElementById('settingDana').value.trim();
+                if (!val) {
+                    showToast('Nomor DANA tidak boleh kosong', 'error');
+                    return;
+                }
+                data.settings.danaNumber = val;
+                saveData();
+                addActivity('admin', 'settings', `Nomor DANA diubah menjadi ${val}`);
+                showToast('✅ Nomor DANA diperbarui', 'success');
+                renderPaymentPage();
+            });
+
+            document.getElementById('btnSaveQris').addEventListener('click', function() {
+                const fileInput = document.getElementById('settingQris');
+                const file = fileInput.files[0];
+                if (!file) {
+                    showToast('Pilih gambar QRIS terlebih dahulu', 'error');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    data.settings.qrisImage = e.target.result;
+                    saveData();
+                    addActivity('admin', 'settings', 'QRIS diupload');
+                    showToast('✅ QRIS berhasil diupload', 'success');
+                    renderAdminSettings();
+                    renderPaymentPage();
+                    fileInput.value = '';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('btnSaveOtp').addEventListener('click', function() {
+                const val = document.getElementById('settingAdminOtp').value.trim();
+                if (!val || val.length < 4) {
+                    showToast('OTP minimal 4 karakter', 'error');
+                    return;
+                }
+                data.settings.adminOtp = val;
+                saveData();
+                addActivity('admin', 'settings', 'OTP admin diubah');
+                showToast('✅ OTP admin diperbarui', 'success');
+            });
+
+            document.getElementById('btnResetAll').addEventListener('click', function() {
+                if (!confirm('⚠️ Yakin ingin menghapus SEMUA data (transaksi, chat, pengaturan)?')) return;
+                data = getDefaultData();
+                saveData();
+                addActivity('admin', 'reset', 'Semua data direset');
+                showToast('🗑️ Semua data telah direset', 'info');
+                renderAdminDashboard();
+                if (document.getElementById('view-buyer-dashboard').classList.contains('active')) {
+                    renderBuyerDashboard();
+                }
+                renderPaymentPage();
+            });
+
+            // ==================== ADMIN TABS ====================
+            document.querySelectorAll('.admin-tabs button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active-tab'));
+                    this.classList.add('active-tab');
+                    const panel = this.dataset.panel;
+                    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active-panel'));
+                    const target = document.getElementById('panel-' + panel);
+                    if (target) target.classList.add('active-panel');
+                    if (panel === 'transactions') renderAdminTransactions();
+                    if (panel === 'chats') renderAdminChatSelector();
+                    if (panel === 'users') renderAdminUsers();
+                    if (panel === 'notifications') renderAdminNotifications();
+                    if (panel === 'autoreply') renderAdminAutoReply();
+                    if (panel === 'activity') renderAdminActivity();
+                    if (panel === 'settings') renderAdminSettings();
+                });
+            });
+
+            // ==================== USER BADGE ====================
+            function updateUserBadge() {
+                const display = document.getElementById('userNameDisplay');
+                const emailDisplay = document.getElementById('userEmailDisplay');
+                const avatar = document.getElementById('userAvatar');
+                const badgeBanned = document.getElementById('bannedBadge');
+                const badgeAdmin = document.getElementById('adminBadge');
+                const logoutBtn = document.getElementById('logoutBtn');
+
+                if (currentUser) {
+                    display.textContent = currentUser;
+                    if (currentUserEmail) {
+                        emailDisplay.textContent = `📧 ${currentUserEmail}`;
+                    } else {
+                        emailDisplay.textContent = '';
+                    }
+                    avatar.textContent = currentUser.charAt(0).toUpperCase();
+                    if (isUserBanned(currentUser)) {
+                        badgeBanned.style.display = 'inline';
+                    } else {
+                        badgeBanned.style.display = 'none';
+                    }
+                    if (isAdminUser()) {
+                        badgeAdmin.style.display = 'inline';
+                        logoutBtn.style.display = 'inline-block';
+                        logoutBtn.textContent = 'Keluar';
+                    } else {
+                        badgeAdmin.style.display = 'none';
+                        logoutBtn.style.display = 'none';
+                    }
+                } else {
+                    display.textContent = 'Belum login';
+                    emailDisplay.textContent = '';
+                    avatar.textContent = '?';
+                    badgeBanned.style.display = 'none';
+                    badgeAdmin.style.display = 'none';
+                    logoutBtn.style.display = 'none';
+                }
+            }
+
+            // ==================== INIT ====================
+            function init() {
+                // Set language toggle initial text
+                document.getElementById('langToggle').textContent = currentLang === 'id' ? '🌐 ID' : '🌐 EN';
+                applyTranslations();
+
+                if (currentUser) {
+                    if (isUserBanned(currentUser)) {
+                        showToast('⛔ Akun Anda telah dibanned oleh admin.', 'error');
+                        saveUser(null, null);
+                        showLoginModal();
+                        return;
+                    }
+                    updateUserBadge();
+                    renderPaymentPage();
+                    if (isAdminUser()) {
+                        navigateTo('admin-dashboard');
+                    } else {
+                        navigateTo('payment');
+                    }
+                } else {
+                    showLoginModal();
+                }
+
+                if (isAdminLoggedIn()) {
+                    // just keep state
+                }
+
+                console.log('🚀 SIMEX PAYMENT loaded');
+                console.log(`📦 ${data.transactions.length} transactions`);
+                console.log(`👥 Users: ${getAllUsers().length}`);
+                console.log(`⛔ Banned: ${data.settings.bannedUsers.length}`);
+                console.log(`🔔 Notifications: ${data.notifications.length}`);
+                console.log(`🤖 Auto-replies: ${(data.settings.autoReplies || []).length}`);
+                console.log(`📋 Activity: ${data.activityLog.length}`);
+            }
+
+            init();
+
+            window.__simex = { data, saveData, navigateTo, currentUser };
+
+        })();
+    </script>
+
+</body>
+</html>
